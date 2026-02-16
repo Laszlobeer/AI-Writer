@@ -2,10 +2,10 @@
 
 A sleek desktop application for AI-assisted writing powered by **Ollama** and built with **PyQt5**. Let your local LLM continue your stories, articles, or documents seamlessly.
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![PyQt5](https://img.shields.io/badge/PyQt5-5.15+-green.svg)
-![Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-orange.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org)
+[![PyQt5](https://img.shields.io/badge/PyQt5-5.15+-green.svg)](https://www.riverbankcomputing.com/software/pyqt/)
+[![Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-orange.svg)](https://ollama.ai)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
@@ -17,7 +17,6 @@ A sleek desktop application for AI-assisted writing powered by **Ollama** and bu
 - **📊 Token Limit** - Control response length (10 - 2000 tokens)
 - **📝 Model Selection** - Choose from all your installed Ollama models
 - **💾 Multiple Export Formats** - Save as .txt or .docx (Word)
-- **📈 Real-time Stats** - Character count and status updates
 - **🖥️ Modern UI** - Clean, responsive interface with sidebar controls
 
 ---
@@ -60,7 +59,7 @@ ollama pull llama2
 ### 2. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/ai-writer.git
+git clone [https://github.com/yourusername/ai-writer.git](https://github.com/Laszlobeer/AI-Writer.git)
 cd ai-writer
 ```
 
@@ -132,7 +131,7 @@ python ai_writer.py
 
 ### Customizing Settings
 
-You can modify default values in the source code:
+You can modify default values in the source code (`ai_writer.py`):
 
 ```python
 # In ai_writer.py
