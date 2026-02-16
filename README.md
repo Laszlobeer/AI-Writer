@@ -47,13 +47,13 @@ First, ensure Ollama is installed and running on your system:
 ```bash
 # Download from https://ollama.ai
 # Then pull a model
-ollama pull llama2
+ollama pull thewindmom/hermes-3-llama-3.1-8b
 ```
 
 **Linux:**
 ```bash
 curl -fsSL https://ollama.ai/install.sh | sh
-ollama pull llama2
+ollama pull thewindmom/hermes-3-llama-3.1-8b
 ```
 
 ### 2. Clone the Repository
@@ -168,7 +168,7 @@ ai-writer/
 ### Dark Mode
 ![Dark Mode](screenshots/dark_mode.png)
 
-*Add your screenshots to the `screenshots/` folder*
+
 
 ---
 
