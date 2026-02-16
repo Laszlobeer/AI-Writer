@@ -1,5 +1,9 @@
 # AI Writer 🖋️
-[![logo](logo.png)]
+
+
+[logo](logo.png)
+
+
 A sleek desktop application for AI-assisted writing powered by **Ollama** and built with **PyQt5**. Let your local LLM continue your stories, articles, or documents seamlessly.
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org)
