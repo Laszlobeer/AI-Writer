@@ -43,6 +43,8 @@ python-docx>=0.8.11  # Optional, for .docx support
 
 First, ensure Ollama is installed and running on your system:
 
+[![Ollama](ollama.png)](https://ollama.ai)
+[![Ollama](ollama-dark.png)](https://ollama.ai)
 **Windows/macOS:**
 ```bash
 # Download from https://ollama.ai
