@@ -154,10 +154,10 @@ DEFAULT_TEMPERATURE = 0.7
 ## 🖼️ Screenshots
 
 ### Light Mode
-![Light Mode](screenshots/lightmode.png)
+![Light Mode](lightmode.png)
 
 ### Dark Mode
-![Dark Mode](screenshots/darkmode.png)
+![Dark Mode](darkmode.png)
 
 
 
