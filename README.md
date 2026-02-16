@@ -9,6 +9,10 @@ A sleek desktop application for AI-assisted writing powered by **Ollama** and bu
 
 ---
 
+
+[![Demo](demo.mp4)]
+
+---
 ## ✨ Features
 
 - **🤖 AI Text Completion** - Continue your writing with local LLM models via Ollama
