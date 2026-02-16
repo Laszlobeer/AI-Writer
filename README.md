@@ -1,2 +1,252 @@
-# AI-Writer
-A code that will help you write a story
+# AI Writer 🖋️
+
+A sleek desktop application for AI-assisted writing powered by **Ollama** and built with **PyQt5**. Let your local LLM continue your stories, articles, or documents seamlessly.
+
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
+![PyQt5](https://img.shields.io/badge/PyQt5-5.15+-green.svg)
+![Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-orange.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+---
+
+## ✨ Features
+
+- **🤖 AI Text Completion** - Continue your writing with local LLM models via Ollama
+- **🎨 Light/Dark Theme** - Toggle between beautiful light and dark modes
+- **🌡️ Temperature Control** - Adjust creativity vs. focus (0.0 - 2.0)
+- **📊 Token Limit** - Control response length (10 - 2000 tokens)
+- **📝 Model Selection** - Choose from all your installed Ollama models
+- **💾 Multiple Export Formats** - Save as .txt or .docx (Word)
+- **📈 Real-time Stats** - Character count and status updates
+- **🖥️ Modern UI** - Clean, responsive interface with sidebar controls
+
+---
+
+## 📋 Requirements
+
+### System Requirements
+- **Python 3.8+**
+- **Ollama** installed and running locally
+- **Operating System**: Windows, macOS, or Linux
+
+### Python Dependencies
+```
+PyQt5>=5.15.0
+requests>=2.28.0
+python-docx>=0.8.11  # Optional, for .docx support
+```
+
+---
+
+## 🚀 Installation
+
+### 1. Install Ollama
+
+First, ensure Ollama is installed and running on your system:
+
+**Windows/macOS:**
+```bash
+# Download from https://ollama.ai
+# Then pull a model
+ollama pull llama2
+```
+
+**Linux:**
+```bash
+curl -fsSL https://ollama.ai/install.sh | sh
+ollama pull llama2
+```
+
+### 2. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/ai-writer.git
+cd ai-writer
+```
+
+### 3. Create Virtual Environment (Recommended)
+
+```bash
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# macOS/Linux
+source venv/bin/activate
+```
+
+### 4. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Or install manually:
+```bash
+pip install PyQt5 requests python-docx
+```
+
+---
+
+## 🎯 Usage
+
+### Starting the Application
+
+```bash
+python ai_writer.py
+```
+
+### Basic Workflow
+
+1. **Select a Model** - Click the model dropdown and choose an installed Ollama model
+2. **Write Your Text** - Start typing in the editor
+3. **Position Cursor** - Place cursor where you want AI to continue
+4. **Click Generate** - Press the ✨ Generate button or use keyboard shortcut
+5. **Review & Edit** - AI completion will be inserted at cursor position
+6. **Save Your Work** - Export as .txt or .docx
+
+### Controls
+
+| Control | Description |
+|---------|-------------|
+| 🌙/☀️ | Toggle Light/Dark theme |
+| 🔄 | Refresh available models |
+| ✨ Generate | Trigger AI completion |
+| 📄 Save .txt | Export as text file |
+| 📕 Save .docx | Export as Word document |
+| 🌡️ Temperature | Adjust creativity (left=focused, right=creative) |
+| 📊 Token Limit | Set maximum response length |
+
+---
+
+## ⚙️ Configuration
+
+### Default Settings
+
+| Setting | Default Value | Description |
+|---------|--------------|-------------|
+| Temperature | 0.7 | Balance between creativity and coherence |
+| Token Limit | 140 | Maximum tokens in AI response |
+| Ollama URL | http://localhost:11434 | Local Ollama server endpoint |
+
+### Customizing Settings
+
+You can modify default values in the source code:
+
+```python
+# In ai_writer.py
+OLLAMA_URL = "http://localhost:11434"
+DEFAULT_TOKEN_LIMIT = 140
+DEFAULT_TEMPERATURE = 0.7
+```
+
+### Temperature Guide
+
+- **0.0 - 0.5** 🎯 Focused, deterministic output
+- **0.5 - 1.0** ⚖️ Balanced creativity and coherence
+- **1.0 - 2.0** 🎨 Highly creative, unpredictable output
+
+---
+
+## 📁 Project Structure
+
+```
+ai-writer/
+├── ai_writer.py          # Main application file
+├── requirements.txt      # Python dependencies
+├── README.md            # This file
+└── .gitignore           # Git ignore rules
+```
+
+---
+
+## 🖼️ Screenshots
+
+### Light Mode
+![Light Mode](screenshots/light_mode.png)
+
+### Dark Mode
+![Dark Mode](screenshots/dark_mode.png)
+
+*Add your screenshots to the `screenshots/` folder*
+
+---
+
+## 🔧 Troubleshooting
+
+### Ollama Connection Error
+```
+Cannot connect to Ollama. Is it running?
+```
+**Solution:** Ensure Ollama service is running:
+```bash
+ollama serve
+```
+
+### No Models Found
+```
+No models available
+```
+**Solution:** Pull a model:
+```bash
+ollama pull llama2
+```
+
+### python-docx Not Available
+```
+install python-docx for .docx
+```
+**Solution:** Install the package:
+```bash
+pip install python-docx
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Code Style
+- Follow PEP 8 guidelines
+- Add comments for complex logic
+- Test on multiple platforms
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [Ollama](https://ollama.ai) - Local LLM infrastructure
+- [PyQt5](https://www.riverbankcomputing.com/software/pyqt/) - GUI framework
+- [python-docx](https://python-docx.readthedocs.io/) - Word document support
+
+---
+
+## 📬 Contact
+
+Have questions or suggestions? Open an issue on GitHub or reach out!
+
+**Project Link:** [https://github.com/yourusername/ai-writer](https://github.com/yourusername/ai-writer)
+
+---
+
+<div align="center">
+
+**Made with ❤️ for writers and developers**
+
+⭐ Star this repo if you find it useful!
+
+</div>
