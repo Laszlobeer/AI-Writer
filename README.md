@@ -96,7 +96,7 @@ pip install PyQt5 requests python-docx
 ### Starting the Application
 
 ```bash
-python ai_writer.py
+python ai writer.py
 ```
 
 ### Basic Workflow
