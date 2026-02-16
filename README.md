@@ -100,10 +100,8 @@ python ai_writer.py
 
 1. **Select a Model** - Click the model dropdown and choose an installed Ollama model
 2. **Write Your Text** - Start typing in the editor
-3. **Position Cursor** - Place cursor where you want AI to continue
-4. **Click Generate** - Press the ✨ Generate button or use keyboard shortcut
-5. **Review & Edit** - AI completion will be inserted at cursor position
-6. **Save Your Work** - Export as .txt or .docx
+3. **Click Generate** - Press the ✨ Generate button or use keyboard shortcut
+4. **Save Your Work** - Export as .txt or .docx
 
 ### Controls
 
@@ -126,7 +124,7 @@ python ai_writer.py
 | Setting | Default Value | Description |
 |---------|--------------|-------------|
 | Temperature | 0.7 | Balance between creativity and coherence |
-| Token Limit | 140 | Maximum tokens in AI response |
+| Token Limit | 2000 | Maximum tokens in AI response |
 | Ollama URL | http://localhost:11434 | Local Ollama server endpoint |
 
 ### Customizing Settings
@@ -191,23 +189,6 @@ install python-docx for .docx
 ```bash
 pip install python-docx
 ```
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Code Style
-- Follow PEP 8 guidelines
-- Add comments for complex logic
-- Test on multiple platforms
 
 ---
 
