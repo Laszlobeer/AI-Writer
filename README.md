@@ -1,7 +1,7 @@
 # AI Writer 🖋️
 
 
-![logo](logo.png)
+![logo](v.png)
 
 
 A sleek desktop application for AI-assisted writing powered by **Ollama** and built with **PyQt5**. Let your local LLM continue your stories, articles, or documents seamlessly.
@@ -46,8 +46,6 @@ python-docx>=0.8.11  # Optional, for .docx support
 ### 1. Install Ollama
 
 First, ensure Ollama is installed and running on your system:
-
-[![Ollama](ollama.png)](https://ollama.ai)
 
 
 **Windows/macOS:**
