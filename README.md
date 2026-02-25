@@ -64,7 +64,7 @@ ollama pull thewindmom/hermes-3-llama-3.1-8b
 ### 2. Clone the Repository
 
 ```bash
-git clone [https://github.com/yourusername/ai-writer.git](https://github.com/Laszlobeer/AI-Writer.git)
+git clone https://github.com/Laszlobeer/AI-Writer.git
 cd ai-writer
 ```
 
