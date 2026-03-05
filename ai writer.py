@@ -4,7 +4,7 @@ from datetime import datetime
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QLabel, QPushButton, QTextEdit,
                              QComboBox, QMessageBox, QFrame, QSlider, QFileDialog,
-                             QStatusBar, QSplitter, QSizePolicy, QSpinBox, 
+                             QStatusBar, QSplitter, QSizePolicy, QSpinBox,
                              QGroupBox, QProgressBar, QShortcut, QScrollArea,
                              QCheckBox, QTabWidget)
 from PyQt5.QtCore import QThread, pyqtSignal, Qt, QSize, QTimer
@@ -19,8 +19,8 @@ except ImportError:
 
 # --- Configuration ---
 OLLAMA_URL = "http://localhost:11434"
-DEFAULT_TOKEN_LIMIT = 140
-DEFAULT_TEMPERATURE = 0.7
+DEFAULT_TOKEN_LIMIT = 40
+DEFAULT_TEMPERATURE = 0.8
 DEFAULT_CONTEXT_CHARS = 2000  # How many previous characters to include in context
 
 # --- Improved Genre Instructions ---
@@ -30,6 +30,11 @@ ANALYZE: Study the tone, vocabulary, sentence structure, and pacing of the exist
 MATCH: Mimic the writing style exactly. Do not shift to a more formal or casual tone.
 CONTINUE: Pick up exactly where the text ends. Do not repeat the last sentence.
 CONSTRAINTS: Output RAW TEXT ONLY. No introductions, no summaries, no moralizing, and no meta-commentary.""",
+    "Erotic": """You are an erotic writer. Continue the text with sensual themes and intimacy and anything goes.
+FOCUS: Desire, physical connection, lust, and sex.
+STYLE: Sensory-rich language, focusing on details, feeling, and atmosphere.
+CONTINUE: Pick up exactly where the text ends. Do not repeat the last sentence.
+CONSTRAINTS: Output RAW TEXT ONLY. Maintain the heat level of the existing text. No meta-commentary.""",
     "Dramatic": """You are a dramatic novelist. Continue the text with high emotional intensity.
 FOCUS: Conflict, strong feelings, interpersonal tension, and stakes.
 STYLE: Use evocative language, internal monologue, and charged dialogue.
@@ -132,277 +137,303 @@ CONTINUE: Pick up exactly where the text ends. Do not repeat the last sentence.
 CONSTRAINTS: Output RAW TEXT ONLY. Maintain the bio-tech dystopian tone. No meta-commentary."""
 }
 
+# --- Grammar Correction Instructions ---
+GRAMMAR_INSTRUCTIONS = """You are an expert grammar and style editor. Your task is to correct the provided text.
+FOCUS: Grammar, spelling, punctuation, sentence structure, and clarity.
+STYLE: Maintain the original tone and voice. Do not rewrite creatively.
+CONSTRAINTS: Output CORRECTED TEXT ONLY. No explanations, no comments, no meta-text.
+Preserve paragraph breaks and formatting."""
+
 # --- Modern Stylesheets ---
 STYLES = {
     "light": """
-    QMainWindow { background-color: #f9f9fb; }
-    QWidget { font-family: 'Segoe UI', 'Roboto', 'Helvetica', sans-serif; color: #2d2d2d; }
-    
-    QWidget#header { 
-        background-color: #ffffff; 
-        border-bottom: 1px solid #e0e0e0; 
-        padding: 10px; 
-    }
-    QPushButton { 
-        background-color: #ffffff; 
-        border: 1px solid #d1d1d1; 
-        border-radius: 6px; 
-        padding: 6px 12px; 
-        font-weight: 500; 
-        color: #333; 
-    }
-    QPushButton:hover { background-color: #f0f0f0; border-color: #bbb; }
-    QPushButton:pressed { background-color: #e5e5e5; }
-    QPushButton:disabled { color: #aaa; border-color: #eee; background-color: #f9f9f9; }
-    
-    QPushButton#generate-btn { 
-        background-color: #007aff; 
-        color: white; 
-        border: 1px solid #007aff; 
-        font-weight: 600; 
-        padding: 6px 20px;
-    }
-    QPushButton#generate-btn:hover { background-color: #0066d6; }
-    QPushButton#generate-btn:disabled { background-color: #a0cfff; border-color: #a0cfff; }
+QMainWindow { background-color: #f9f9fb; }
+QWidget { font-family: 'Segoe UI', 'Roboto', 'Helvetica', sans-serif; color: #2d2d2d; }
+QWidget#header { 
+    background-color: #ffffff; 
+    border-bottom: 1px solid #e0e0e0; 
+    padding: 10px; 
+}
+QPushButton { 
+    background-color: #ffffff; 
+    border: 1px solid #d1d1d1; 
+    border-radius: 6px; 
+    padding: 6px 12px; 
+    font-weight: 500; 
+    color: #333; 
+}
+QPushButton:hover { background-color: #f0f0f0; border-color: #bbb; }
+QPushButton:pressed { background-color: #e5e5e5; }
+QPushButton:disabled { color: #aaa; border-color: #eee; background-color: #f9f9f9; }
 
-    QPushButton#theme-btn { background-color: transparent; border: none; font-size: 18px; padding: 4px; }
-    QPushButton#theme-btn:hover { background-color: #f0f0f0; }
-    
-    QPushButton#memory-btn { 
-        background-color: #ff9500; 
-        color: white; 
-        border: 1px solid #ff9500; 
-        font-weight: 600; 
-        padding: 6px 15px;
-    }
-    QPushButton#memory-btn:hover { background-color: #e68600; }
+QPushButton#generate-btn { 
+    background-color: #007aff; 
+    color: white; 
+    border: 1px solid #007aff; 
+    font-weight: 600; 
+    padding: 6px 20px;
+}
+QPushButton#generate-btn:hover { background-color: #0066d6; }
+QPushButton#generate-btn:disabled { background-color: #a0cfff; border-color: #a0cfff; }
 
-    QTextEdit#editor { 
-        background-color: #ffffff; 
-        border: none; 
-        padding: 30px 40px; 
-        font-size: 18px; 
-        line-height: 1.6; 
-        font-family: 'Georgia', 'Times New Roman', serif; 
-        color: #1a1a1a;
-        selection-background-color: #b3d7ff;
-    }
-    QTextEdit#editor:focus { outline: none; }
-    QTextEdit#editor:disabled { background-color: #fafafa; color: #999; }
-    
-    QTextEdit#memory-view { 
-        background-color: #f5f5f7; 
-        border: 1px solid #e0e0e0; 
-        border-radius: 6px; 
-        padding: 15px; 
-        font-size: 13px; 
-        line-height: 1.5; 
-        font-family: 'Consolas', 'Monaco', monospace; 
-        color: #555;
-    }
+QPushButton#grammar-btn { 
+    background-color: #34c759; 
+    color: white; 
+    border: 1px solid #34c759; 
+    font-weight: 600; 
+    padding: 6px 15px;
+}
+QPushButton#grammar-btn:hover { background-color: #2db84f; }
+QPushButton#grammar-btn:disabled { background-color: #a0d9a8; border-color: #a0d9a8; }
 
-    QFrame#sidebar { 
-        background-color: #ffffff; 
-        border-left: 1px solid #e0e0e0; 
-        padding: 0px; 
-    }
-    
-    QGroupBox { 
-        font-weight: 600; 
-        color: #555; 
-        border: 1px solid #e0e0e0; 
-        border-radius: 8px; 
-        margin-top: 12px; 
-        padding-top: 10px; 
-    }
-    QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }
+QPushButton#theme-btn { background-color: transparent; border: none; font-size: 18px; padding: 4px; }
+QPushButton#theme-btn:hover { background-color: #f0f0f0; }
 
-    QComboBox, QSpinBox { 
-        background-color: #f5f5f7; 
-        border: 1px solid #d1d1d1; 
-        border-radius: 6px; 
-        padding: 6px; 
-        font-size: 13px; 
-        color: #333;
-    }
-    QComboBox:focus, QSpinBox:focus { border: 1px solid #007aff; background-color: #fff; }
-    QComboBox::drop-down { border: none; padding-right: 10px; }
-    QComboBox::down-arrow { image: none; border-left: 1px solid #d1d1d1; padding-left: 5px; }
+QPushButton#memory-btn { 
+    background-color: #ff9500; 
+    color: white; 
+    border: 1px solid #ff9500; 
+    font-weight: 600; 
+    padding: 6px 15px;
+}
+QPushButton#memory-btn:hover { background-color: #e68600; }
 
-    QSlider::groove:horizontal { border: 1px solid #ddd; height: 6px; background: #e0e0e0; border-radius: 3px; }
-    QSlider::handle:horizontal { background: #007aff; border: 1px solid #0056b3; width: 16px; margin: -5px 0; border-radius: 8px; }
-    QSlider::handle:horizontal:hover { background: #0056b3; }
+QTextEdit#editor { 
+    background-color: #ffffff; 
+    border: none; 
+    padding: 30px 40px; 
+    font-size: 18px; 
+    line-height: 1.6; 
+    font-family: 'Georgia', 'Times New Roman', serif; 
+    color: #1a1a1a;
+    selection-background-color: #b3d7ff;
+}
+QTextEdit#editor:focus { outline: none; }
+QTextEdit#editor:disabled { background-color: #fafafa; color: #999; }
 
-    QLabel#sidebar-title { font-size: 13px; font-weight: 600; color: #555; margin: 4px 0; }
-    QLabel#status-label { color: #666; font-size: 12px; }
-    QLabel#memory-indicator { 
-        background-color: #34c759; 
-        color: white; 
-        border-radius: 10px; 
-        padding: 3px 10px; 
-        font-size: 11px; 
-        font-weight: 600; 
-    }
-    
-    QStatusBar { background-color: #ffffff; border-top: 1px solid #e0e0e0; color: #666; padding: 4px; }
-    
-    QSplitter::handle { background-color: #e0e0e0; width: 4px; }
-    QSplitter::handle:hover { background-color: #007aff; }
-    
-    QProgressBar { 
-        border: 1px solid #ddd; 
-        border-radius: 4px; 
-        text-align: center; 
-        background: #f0f0f0; 
-        height: 10px; 
-    }
-    QProgressBar::chunk { background-color: #007aff; border-radius: 3px; }
-    
-    QTabWidget::pane { border: 1px solid #e0e0e0; border-radius: 6px; }
-    QTabBar::tab { 
-        background-color: #f0f0f0; 
-        border: 1px solid #e0e0e0; 
-        border-radius: 4px 4px 0 0; 
-        padding: 6px 12px; 
-        margin-right: 2px; 
-    }
-    QTabBar::tab:selected { background-color: #ffffff; border-bottom: 1px solid #ffffff; }
-    QTabBar::tab:hover { background-color: #e5e5e5; }
+QTextEdit#memory-view { 
+    background-color: #f5f5f7; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 6px; 
+    padding: 15px; 
+    font-size: 13px; 
+    line-height: 1.5; 
+    font-family: 'Consolas', 'Monaco', monospace; 
+    color: #555;
+}
+
+QFrame#sidebar { 
+    background-color: #ffffff; 
+    border-left: 1px solid #e0e0e0; 
+    padding: 0px; 
+}
+
+QGroupBox { 
+    font-weight: 600; 
+    color: #555; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 8px; 
+    margin-top: 12px; 
+    padding-top: 10px; 
+}
+QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }
+
+QComboBox, QSpinBox { 
+    background-color: #f5f5f7; 
+    border: 1px solid #d1d1d1; 
+    border-radius: 6px; 
+    padding: 6px; 
+    font-size: 13px; 
+    color: #333;
+}
+QComboBox:focus, QSpinBox:focus { border: 1px solid #007aff; background-color: #fff; }
+QComboBox::drop-down { border: none; padding-right: 10px; }
+QComboBox::down-arrow { image: none; border-left: 1px solid #d1d1d1; padding-left: 5px; }
+
+QSlider::groove:horizontal { border: 1px solid #ddd; height: 6px; background: #e0e0e0; border-radius: 3px; }
+QSlider::handle:horizontal { background: #007aff; border: 1px solid #0056b3; width: 16px; margin: -5px 0; border-radius: 8px; }
+QSlider::handle:horizontal:hover { background: #0056b3; }
+
+QLabel#sidebar-title { font-size: 13px; font-weight: 600; color: #555; margin: 4px 0; }
+QLabel#status-label { color: #666; font-size: 12px; }
+QLabel#memory-indicator { 
+    background-color: #34c759; 
+    color: white; 
+    border-radius: 10px; 
+    padding: 3px 10px; 
+    font-size: 11px; 
+    font-weight: 600; 
+}
+
+QStatusBar { background-color: #ffffff; border-top: 1px solid #e0e0e0; color: #666; padding: 4px; }
+
+QSplitter::handle { background-color: #e0e0e0; width: 4px; }
+QSplitter::handle:hover { background-color: #007aff; }
+
+QProgressBar { 
+    border: 1px solid #ddd; 
+    border-radius: 4px; 
+    text-align: center; 
+    background: #f0f0f0; 
+    height: 10px; 
+}
+QProgressBar::chunk { background-color: #007aff; border-radius: 3px; }
+
+QTabWidget::pane { border: 1px solid #e0e0e0; border-radius: 6px; }
+QTabBar::tab { 
+    background-color: #f0f0f0; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 4px 4px 0 0; 
+    padding: 6px 12px; 
+    margin-right: 2px; 
+}
+QTabBar::tab:selected { background-color: #ffffff; border-bottom: 1px solid #ffffff; }
+QTabBar::tab:hover { background-color: #e5e5e5; }
     """,
     "dark": """
-    QMainWindow { background-color: #1e1e1e; }
-    QWidget { font-family: 'Segoe UI', 'Roboto', 'Helvetica', sans-serif; color: #d4d4d4; }
-    
-    QWidget#header { 
-        background-color: #252526; 
-        border-bottom: 1px solid #3e3e42; 
-        padding: 10px; 
-    }
-    QPushButton { 
-        background-color: #3c3c3c; 
-        border: 1px solid #3c3c3c; 
-        border-radius: 6px; 
-        padding: 6px 12px; 
-        font-weight: 500; 
-        color: #d4d4d4; 
-    }
-    QPushButton:hover { background-color: #505050; }
-    QPushButton:pressed { background-color: #606060; }
-    QPushButton:disabled { color: #666; background-color: #2d2d2d; }
-    
-    QPushButton#generate-btn { 
-        background-color: #0e639c; 
-        color: white; 
-        border: 1px solid #0e639c; 
-        font-weight: 600; 
-        padding: 6px 20px;
-    }
-    QPushButton#generate-btn:hover { background-color: #1177bb; }
-    QPushButton#generate-btn:disabled { background-color: #3c3c3c; border-color: #3c3c3c; color: #888; }
+QMainWindow { background-color: #1e1e1e; }
+QWidget { font-family: 'Segoe UI', 'Roboto', 'Helvetica', sans-serif; color: #d4d4d4; }
 
-    QPushButton#theme-btn { background-color: transparent; border: none; font-size: 18px; padding: 4px; }
-    QPushButton#theme-btn:hover { background-color: #3c3c3c; }
-    
-    QPushButton#memory-btn { 
-        background-color: #d97706; 
-        color: white; 
-        border: 1px solid #d97706; 
-        font-weight: 600; 
-        padding: 6px 15px;
-    }
-    QPushButton#memory-btn:hover { background-color: #b45309; }
+QWidget#header { 
+    background-color: #252526; 
+    border-bottom: 1px solid #3e3e42; 
+    padding: 10px; 
+}
+QPushButton { 
+    background-color: #3c3c3c; 
+    border: 1px solid #3c3c3c; 
+    border-radius: 6px; 
+    padding: 6px 12px; 
+    font-weight: 500; 
+    color: #d4d4d4; 
+}
+QPushButton:hover { background-color: #505050; }
+QPushButton:pressed { background-color: #606060; }
+QPushButton:disabled { color: #666; background-color: #2d2d2d; }
 
-    QTextEdit#editor { 
-        background-color: #1e1e1e; 
-        border: none; 
-        padding: 30px 40px; 
-        font-size: 18px; 
-        line-height: 1.6; 
-        font-family: 'Georgia', 'Times New Roman', serif; 
-        color: #d4d4d4;
-        selection-background-color: #264f78;
-    }
-    QTextEdit#editor:focus { outline: none; }
-    QTextEdit#editor:disabled { background-color: #1a1a1a; color: #666; }
-    
-    QTextEdit#memory-view { 
-        background-color: #2d2d30; 
-        border: 1px solid #3e3e42; 
-        border-radius: 6px; 
-        padding: 15px; 
-        font-size: 13px; 
-        line-height: 1.5; 
-        font-family: 'Consolas', 'Monaco', monospace; 
-        color: #aaa;
-    }
+QPushButton#generate-btn { 
+    background-color: #0e639c; 
+    color: white; 
+    border: 1px solid #0e639c; 
+    font-weight: 600; 
+    padding: 6px 20px;
+}
+QPushButton#generate-btn:hover { background-color: #1177bb; }
+QPushButton#generate-btn:disabled { background-color: #3c3c3c; border-color: #3c3c3c; color: #888; }
 
-    QFrame#sidebar { 
-        background-color: #252526; 
-        border-left: 1px solid #3e3e42; 
-        padding: 0px; 
-    }
-    
-    QGroupBox { 
-        font-weight: 600; 
-        color: #aaa; 
-        border: 1px solid #3e3e42; 
-        border-radius: 8px; 
-        margin-top: 12px; 
-        padding-top: 10px; 
-    }
-    QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }
+QPushButton#grammar-btn { 
+    background-color: #10b981; 
+    color: white; 
+    border: 1px solid #10b981; 
+    font-weight: 600; 
+    padding: 6px 15px;
+}
+QPushButton#grammar-btn:hover { background-color: #059669; }
+QPushButton#grammar-btn:disabled { background-color: #3c5c52; border-color: #3c5c52; }
 
-    QComboBox, QSpinBox { 
-        background-color: #3c3c3c; 
-        border: 1px solid #3c3c3c; 
-        border-radius: 6px; 
-        padding: 6px; 
-        font-size: 13px; 
-        color: #d4d4d4;
-    }
-    QComboBox:focus, QSpinBox:focus { border: 1px solid #0e639c; background-color: #444; }
-    QComboBox::drop-down { border: none; padding-right: 10px; }
-    QComboBox::down-arrow { image: none; border-left: 1px solid #555; padding-left: 5px; }
+QPushButton#theme-btn { background-color: transparent; border: none; font-size: 18px; padding: 4px; }
+QPushButton#theme-btn:hover { background-color: #3c3c3c; }
 
-    QSlider::groove:horizontal { border: 1px solid #555; height: 6px; background: #3c3c3c; border-radius: 3px; }
-    QSlider::handle:horizontal { background: #0e639c; border: 1px solid #0e639c; width: 16px; margin: -5px 0; border-radius: 8px; }
-    QSlider::handle:horizontal:hover { background: #1177bb; }
+QPushButton#memory-btn { 
+    background-color: #d97706; 
+    color: white; 
+    border: 1px solid #d97706; 
+    font-weight: 600; 
+    padding: 6px 15px;
+}
+QPushButton#memory-btn:hover { background-color: #b45309; }
 
-    QLabel#sidebar-title { font-size: 13px; font-weight: 600; color: #aaa; margin: 4px 0; }
-    QLabel#status-label { color: #888; font-size: 12px; }
-    QLabel#memory-indicator { 
-        background-color: #10b981; 
-        color: white; 
-        border-radius: 10px; 
-        padding: 3px 10px; 
-        font-size: 11px; 
-        font-weight: 600; 
-    }
-    
-    QStatusBar { background-color: #252526; border-top: 1px solid #3e3e42; color: #888; padding: 4px; }
-    
-    QSplitter::handle { background-color: #3e3e42; width: 4px; }
-    QSplitter::handle:hover { background-color: #0e639c; }
-    
-    QProgressBar { 
-        border: 1px solid #555; 
-        border-radius: 4px; 
-        text-align: center; 
-        background: #3c3c3c; 
-        height: 10px; 
-    }
-    QProgressBar::chunk { background-color: #0e639c; border-radius: 3px; }
-    
-    QTabWidget::pane { border: 1px solid #3e3e42; border-radius: 6px; }
-    QTabBar::tab { 
-        background-color: #3c3c3c; 
-        border: 1px solid #3e3e42; 
-        border-radius: 4px 4px 0 0; 
-        padding: 6px 12px; 
-        margin-right: 2px; 
-    }
-    QTabBar::tab:selected { background-color: #252526; border-bottom: 1px solid #252526; }
-    QTabBar::tab:hover { background-color: #505050; }
+QTextEdit#editor { 
+    background-color: #1e1e1e; 
+    border: none; 
+    padding: 30px 40px; 
+    font-size: 18px; 
+    line-height: 1.6; 
+    font-family: 'Georgia', 'Times New Roman', serif; 
+    color: #d4d4d4;
+    selection-background-color: #264f78;
+}
+QTextEdit#editor:focus { outline: none; }
+QTextEdit#editor:disabled { background-color: #1a1a1a; color: #666; }
+
+QTextEdit#memory-view { 
+    background-color: #2d2d30; 
+    border: 1px solid #3e3e42; 
+    border-radius: 6px; 
+    padding: 15px; 
+    font-size: 13px; 
+    line-height: 1.5; 
+    font-family: 'Consolas', 'Monaco', monospace; 
+    color: #aaa;
+}
+
+QFrame#sidebar { 
+    background-color: #252526; 
+    border-left: 1px solid #3e3e42; 
+    padding: 0px; 
+}
+
+QGroupBox { 
+    font-weight: 600; 
+    color: #aaa; 
+    border: 1px solid #3e3e42; 
+    border-radius: 8px; 
+    margin-top: 12px; 
+    padding-top: 10px; 
+}
+QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }
+
+QComboBox, QSpinBox { 
+    background-color: #3c3c3c; 
+    border: 1px solid #3c3c3c; 
+    border-radius: 6px; 
+    padding: 6px; 
+    font-size: 13px; 
+    color: #d4d4d4;
+}
+QComboBox:focus, QSpinBox:focus { border: 1px solid #0e639c; background-color: #444; }
+QComboBox::drop-down { border: none; padding-right: 10px; }
+QComboBox::down-arrow { image: none; border-left: 1px solid #555; padding-left: 5px; }
+
+QSlider::groove:horizontal { border: 1px solid #555; height: 6px; background: #3c3c3c; border-radius: 3px; }
+QSlider::handle:horizontal { background: #0e639c; border: 1px solid #0e639c; width: 16px; margin: -5px 0; border-radius: 8px; }
+QSlider::handle:horizontal:hover { background: #1177bb; }
+
+QLabel#sidebar-title { font-size: 13px; font-weight: 600; color: #aaa; margin: 4px 0; }
+QLabel#status-label { color: #888; font-size: 12px; }
+QLabel#memory-indicator { 
+    background-color: #10b981; 
+    color: white; 
+    border-radius: 10px; 
+    padding: 3px 10px; 
+    font-size: 11px; 
+    font-weight: 600; 
+}
+
+QStatusBar { background-color: #252526; border-top: 1px solid #3e3e42; color: #888; padding: 4px; }
+
+QSplitter::handle { background-color: #3e3e42; width: 4px; }
+QSplitter::handle:hover { background-color: #0e639c; }
+
+QProgressBar { 
+    border: 1px solid #555; 
+    border-radius: 4px; 
+    text-align: center; 
+    background: #3c3c3c; 
+    height: 10px; 
+}
+QProgressBar::chunk { background-color: #0e639c; border-radius: 3px; }
+
+QTabWidget::pane { border: 1px solid #3e3e42; border-radius: 6px; }
+QTabBar::tab { 
+    background-color: #3c3c3c; 
+    border: 1px solid #3e3e42; 
+    border-radius: 4px 4px 0 0; 
+    padding: 6px 12px; 
+    margin-right: 2px; 
+}
+QTabBar::tab:selected { background-color: #252526; border-bottom: 1px solid #252526; }
+QTabBar::tab:hover { background-color: #505050; }
     """
 }
 
@@ -411,9 +442,9 @@ class OllamaWorker(QThread):
     error = pyqtSignal(str)
     models_loaded = pyqtSignal(list)
     progress = pyqtSignal(int)
-
+    
     def __init__(self, endpoint, model=None, prompt=None, context=None, temperature=0.7, 
-                 token_limit=140, genre="Neutral", memory_summary=None):
+                 token_limit=140, genre="Neutral", memory_summary=None, grammar_endpoint=False):
         super().__init__()
         self.endpoint = endpoint
         self.model = model
@@ -423,6 +454,7 @@ class OllamaWorker(QThread):
         self.token_limit = token_limit
         self.genre = genre
         self.memory_summary = memory_summary
+        self.grammar_endpoint = grammar_endpoint
 
     def run(self):
         try:
@@ -450,7 +482,7 @@ class OllamaWorker(QThread):
                 prompt_parts.append(f"\n\n### CURRENT TEXT ###\n{self.prompt}\n")
                 prompt_parts.append(f"\n### CONTINUATION ###\n")
                 
-                full_prompt = "".join(prompt_parts)
+                full_prompt = " ".join(prompt_parts)
             
                 payload = {
                     "model": self.model,
@@ -469,6 +501,32 @@ class OllamaWorker(QThread):
                     self.finished.emit(cleaned)
                 else:
                     self.error.emit(f"Generation Error: {response.status_code}")
+            
+            elif self.endpoint == "grammar":
+                prompt_parts = [GRAMMAR_INSTRUCTIONS]
+                prompt_parts.append(f"\n\n### TEXT TO CORRECT ###\n{self.prompt}\n")
+                prompt_parts.append(f"\n### CORRECTED TEXT ###\n")
+                
+                full_prompt = " ".join(prompt_parts)
+            
+                payload = {
+                    "model": self.model,
+                    "prompt": full_prompt,
+                    "stream": False,
+                    "options": {
+                        "num_predict": self.token_limit,
+                        "temperature": 0.3  # Lower temperature for consistent corrections
+                    }
+                }
+                response = requests.post(f"{OLLAMA_URL}/api/generate", json=payload, timeout=120)
+                if response.status_code == 200:
+                    data = response.json()
+                    completion = data.get('response', '')
+                    cleaned = completion.strip()
+                    self.finished.emit(cleaned)
+                else:
+                    self.error.emit(f"Grammar Correction Error: {response.status_code}")
+                    
         except requests.exceptions.ConnectionError:
             self.error.emit("Cannot connect to Ollama. Is it running?")
         except Exception as e:
@@ -484,8 +542,8 @@ class OllamaWorker(QThread):
         prefixes = [
             "here's the continuation: ", "continuation: ", "continued: ", 
             "here is the completion: ", "here's the completion: ",
-            "the continuation is: ", "completion: ", "### Continuation ###",
-            "### CONTINUATION ###"
+            "the continuation is: ", "completion: ", "### Continuation ### ",
+            "### CONTINUATION ### "
         ]
         for prefix in prefixes:
             if completion_stripped.lower().startswith(prefix):
@@ -499,7 +557,7 @@ class OllamaWorker(QThread):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("AI Writer Pro - With Memory")
+        self.setWindowTitle("AI Writer Pro - With Memory & Grammar")
         self.setMinimumSize(1200, 800)
         self.current_theme = "light"
         self.temperature = DEFAULT_TEMPERATURE
@@ -509,15 +567,15 @@ class MainWindow(QMainWindow):
         self.selected_genre = "Neutral"
         self.memory_enabled = True
         self.generation_history = []  # Track all generations in session
+        self.grammar_model = None  # Store selected grammar model
         self.setStyleSheet(STYLES[self.current_theme])
-        
         self.init_ui()
         self.scan_models()
 
     def init_ui(self):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout(central_widget)
+        main_layout = QVBoxLayout(central_widget) 
         main_layout.setSpacing(0)
         main_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -541,7 +599,7 @@ class MainWindow(QMainWindow):
         self.model_combo = QComboBox()
         self.model_combo.setMinimumWidth(200)
         self.model_combo.addItem("Select model...")
-        header_layout.addWidget(QLabel("  Model:"))
+        header_layout.addWidget(QLabel("  Model: "))
         header_layout.addWidget(self.model_combo)
         
         self.scan_btn = QPushButton("🔄")
@@ -552,13 +610,29 @@ class MainWindow(QMainWindow):
         
         header_layout.addSpacing(20)
         
+        # Grammar Model Selection
+        header_layout.addSpacing(20)
+        self.grammar_model_combo = QComboBox()
+        self.grammar_model_combo.setMinimumWidth(180)
+        self.grammar_model_combo.addItem("Select grammar model...")
+        header_layout.addWidget(QLabel("  🔧 Grammar Model: "))
+        header_layout.addWidget(self.grammar_model_combo)
+        
+        self.grammar_scan_btn = QPushButton("🔄")
+        self.grammar_scan_btn.setToolTip("Refresh Grammar Models")
+        self.grammar_scan_btn.setFixedWidth(40)
+        self.grammar_scan_btn.clicked.connect(self.scan_grammar_models)
+        header_layout.addWidget(self.grammar_scan_btn)
+        
+        header_layout.addSpacing(20)
+        
         # Genre Dropdown
         self.genre_combo = QComboBox()
         self.genre_combo.setMinimumWidth(180)
         self.genre_combo.addItems(list(GENRE_INSTRUCTIONS.keys()))
         self.genre_combo.setCurrentText("Neutral")
         self.genre_combo.currentTextChanged.connect(self.on_genre_changed)
-        header_layout.addWidget(QLabel("  📚 Genre:"))
+        header_layout.addWidget(QLabel("  📚 Genre: "))
         header_layout.addWidget(self.genre_combo)
         
         header_layout.addSpacing(20)
@@ -580,6 +654,16 @@ class MainWindow(QMainWindow):
         self.generate_btn.clicked.connect(self.start_generation)
         self.generate_btn.setEnabled(False)
         header_layout.addWidget(self.generate_btn)
+        
+        header_layout.addSpacing(10)
+        
+        # Grammar Correction Button
+        self.grammar_btn = QPushButton("🔧 Correct Grammar")
+        self.grammar_btn.setObjectName("grammar-btn")
+        self.grammar_btn.setFixedHeight(35)
+        self.grammar_btn.clicked.connect(self.start_grammar_correction)
+        self.grammar_btn.setEnabled(False)
+        header_layout.addWidget(self.grammar_btn)
         
         header_layout.addSpacing(10)
         
@@ -728,7 +812,8 @@ class MainWindow(QMainWindow):
             "• Lower temp = consistent style",
             "• Higher temp = surprising ideas",
             "• Check Memory tab to see context",
-            "• Clear memory for new chapters"
+            "• Clear memory for new chapters",
+            "• Use Grammar button to fix errors"
         ]
         for tip in tips:
             lbl = QLabel(tip)
@@ -752,7 +837,7 @@ class MainWindow(QMainWindow):
         self.char_label = QLabel("0 chars | 0 words")
         self.char_label.setObjectName("status-label")
         self.statusBar.addPermanentWidget(self.char_label)
-        self.statusBar.showMessage("🧠 Memory System Ready")
+        self.statusBar.showMessage("🧠 Memory System Ready | 🔧 Grammar Correction Available")
         
         # Keyboard Shortcuts
         shortcut = QShortcut(QKeySequence("Ctrl+Return"), self)
@@ -813,9 +898,13 @@ class MainWindow(QMainWindow):
         self.char_label.setText(f"{char_count} chars | {word_count} words")
         
         model = self.model_combo.currentText()
+        grammar_model = self.grammar_model_combo.currentText()
         has_text = len(text.strip()) > 0
         has_model = model not in ["Select model...", "No models found"]
+        has_grammar_model = grammar_model not in ["Select grammar model...", "No models found"]
+        
         self.generate_btn.setEnabled(has_text and has_model and not self.progress_bar.isVisible())
+        self.grammar_btn.setEnabled(has_text and has_grammar_model and not self.progress_bar.isVisible())
         
         # Update memory view when text changes
         if self.memory_enabled:
@@ -843,9 +932,7 @@ Context Length: {len(context_text)} / {self.context_chars} characters
 Total Document: {len(text)} characters
 Generations in Session: {len(self.generation_history)}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 {context_text if context_text else "(No context yet)"}
-
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 💡 The AI will see this context + your current cursor position to continue writing seamlessly.
 """
@@ -874,6 +961,17 @@ Generations in Session: {len(self.generation_history)}
         self.worker.error.connect(self.on_error)
         self.worker.start()
 
+    def scan_grammar_models(self):
+        self.statusBar.showMessage("🔍 Scanning for grammar models...")
+        self.grammar_model_combo.clear()
+        self.grammar_model_combo.addItem("Scanning...")
+        self.grammar_btn.setEnabled(False)
+        
+        self.worker = OllamaWorker(endpoint="scan")
+        self.worker.models_loaded.connect(self.on_grammar_models_loaded)
+        self.worker.error.connect(self.on_error)
+        self.worker.start()
+
     def on_models_loaded(self, models):
         self.model_combo.clear()
         if not models:
@@ -882,7 +980,26 @@ Generations in Session: {len(self.generation_history)}
             self.generate_btn.setEnabled(False)
         else:
             self.model_combo.addItems(models)
-            self.statusBar.showMessage(f"✓ {len(models)} models available | 🧠 Memory Ready")
+            # Also populate grammar model combo
+            self.grammar_model_combo.clear()
+            self.grammar_model_combo.addItems(models)
+            self.statusBar.showMessage(f"✓ {len(models)} models available | 🧠 Memory Ready | 🔧 Grammar Ready")
+            self.on_text_changed()
+
+    def on_grammar_models_loaded(self, models):
+        self.grammar_model_combo.clear()
+        if not models:
+            self.grammar_model_combo.addItem("No models found")
+            self.statusBar.showMessage("❌ No grammar models available")
+            self.grammar_btn.setEnabled(False)
+        else:
+            self.grammar_model_combo.addItems(models)
+            # Optionally set a default grammar-focused model
+            for model in models:
+                if any(x in model.lower() for x in ["llama", "mistral", "phi"]):
+                    self.grammar_model_combo.setCurrentText(model)
+                    break
+            self.statusBar.showMessage(f"✓ {len(models)} grammar models available")
             self.on_text_changed()
 
     def start_generation(self):
@@ -922,6 +1039,47 @@ Generations in Session: {len(self.generation_history)}
         self.worker.error.connect(self.on_error)
         self.worker.start()
 
+    def start_grammar_correction(self):
+        text = self.editor.toPlainText()
+        model = self.grammar_model_combo.currentText()
+        
+        if not text.strip() or model in ["Select grammar model...", "No models found"]:
+            QMessageBox.warning(self, "Warning", "Please enter text and select a grammar model.")
+            return
+
+        # Confirm before correcting (optional)
+        reply = QMessageBox.question(self, 'Correct Grammar', 
+                                    'This will replace the selected text with corrected version.\n\nContinue?',
+                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        if reply == QMessageBox.No:
+            return
+
+        # Get selected text or full text
+        cursor = self.editor.textCursor()
+        if cursor.hasSelection():
+            selected_text = cursor.selectedText()
+            correction_range = (cursor.selectionStart(), cursor.selectionEnd())
+        else:
+            selected_text = text
+            correction_range = (0, len(text))
+        
+        if not selected_text.strip():
+            QMessageBox.warning(self, "Warning", "No text selected for correction.")
+            return
+
+        # UI State: Loading
+        self.grammar_btn.setEnabled(False)
+        self.grammar_btn.setText("⏳ Correcting...")
+        self.progress_bar.show()
+        self.statusBar.showMessage(f"AI is correcting grammar (Model: {model})...")
+        self.editor.setEnabled(False)
+        
+        self.worker = OllamaWorker(endpoint="grammar", model=model, prompt=selected_text, 
+                                   temperature=0.3, token_limit=self.token_limit * 2)
+        self.worker.finished.connect(self.on_grammar_finished)
+        self.worker.error.connect(self.on_error)
+        self.worker.start()
+
     def on_generation_finished(self, completion):
         # UI State: Ready
         self.progress_bar.hide()
@@ -953,7 +1111,7 @@ Generations in Session: {len(self.generation_history)}
         
         text = self.editor.toPlainText()
         if text and not text[-1].isspace() and completion and not completion[0].isspace():
-            cursor.insertText(" ")
+            cursor.insertText("  ")
         
         cursor.insertText(completion)
         self.editor.setTextCursor(cursor)
@@ -962,10 +1120,41 @@ Generations in Session: {len(self.generation_history)}
         self.on_text_changed()
         self.update_memory_view()
 
+    def on_grammar_finished(self, completion):
+        # UI State: Ready
+        self.progress_bar.hide()
+        self.grammar_btn.setEnabled(True)
+        self.grammar_btn.setText("🔧 Correct Grammar")
+        self.editor.setEnabled(True)
+        self.editor.setFocus()
+        
+        if not completion.strip():
+            self.statusBar.showMessage("⚠️ No correction generated")
+            return
+        
+        # Get the correction range
+        cursor = self.editor.textCursor()
+        if cursor.hasSelection():
+            correction_range = (cursor.selectionStart(), cursor.selectionEnd())
+        else:
+            correction_range = (0, len(self.editor.toPlainText()))
+        
+        # Replace the text
+        cursor.setPosition(correction_range[0])
+        cursor.setPosition(correction_range[1], QTextCursor.KeepAnchor)
+        cursor.insertText(completion)
+        self.editor.setTextCursor(cursor)
+        
+        self.statusBar.showMessage(f"✓ Grammar corrected ({len(completion)} chars)")
+        self.on_text_changed()
+        self.update_memory_view()
+
     def on_error(self, error_msg):
         self.progress_bar.hide()
         self.generate_btn.setEnabled(True)
         self.generate_btn.setText("✨ Generate")
+        self.grammar_btn.setEnabled(True)
+        self.grammar_btn.setText("🔧 Correct Grammar")
         self.editor.setEnabled(True)
         self.statusBar.showMessage("❌ Error")
         QMessageBox.critical(self, "Error", error_msg)
@@ -1022,11 +1211,10 @@ Generations in Session: {len(self.generation_history)}
 if __name__ == "__main__":
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
-    
     app = QApplication(sys.argv)
     font = QFont("Segoe UI", 10)
     app.setFont(font)
-    
+
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
